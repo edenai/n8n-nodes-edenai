@@ -1,0 +1,60 @@
+{
+  "name": "n8n-nodes-edenai",
+  "version": "0.1.0",
+  "description": "n8n community node for Eden AI — access 300+ models from 50+ providers through a single European AI gateway",
+  "keywords": [
+    "n8n-community-node-package",
+    "n8n",
+    "edenai",
+    "eden-ai",
+    "llm",
+    "ai",
+    "chat-model",
+    "openai",
+    "anthropic",
+    "mistral"
+  ],
+  "license": "MIT",
+  "homepage": "https://www.edenai.run",
+  "author": {
+    "name": "Eden AI",
+    "email": "contact@edenai.co"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/edenai/n8n-nodes-edenai"
+  },
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc && node scripts/post-build.js",
+    "dev": "tsc --watch",
+    "lint": "eslint nodes credentials --ext .ts",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build && npm run lint"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/EdenAiApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/LmChatEdenAi/LmChatEdenAi.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@n8n/ai-node-sdk": "^0.5.0",
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "n8n-workflow": "^2.14.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "@n8n/ai-node-sdk": "*",
+    "n8n-workflow": "*"
+  }
+}
