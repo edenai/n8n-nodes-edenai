@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-edenai",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "n8n community node for Eden AI — access 300+ models from 50+ providers through a single European AI gateway",
   "keywords": [
     "n8n-community-node-package",

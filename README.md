@@ -40,5 +40,5 @@ Add the **Eden AI Chat Model** node as a sub-node to any AI Agent or Chain in yo
 ## Links
 
 - [Eden AI Documentation](https://docs.edenai.co)
-- [Browse all models](https://docs.edenai.run/models)
+- [Browse all models](https://app.edenai.run/models)
 - [n8n Community Nodes](https://docs.n8n.io/integrations/community-nodes/)
