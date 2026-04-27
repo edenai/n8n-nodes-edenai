@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:www.edenai.co)",
+      "Bash(npm install:*)",
+      "Bash(npm publish:*)"
+    ]
+  }
+}
