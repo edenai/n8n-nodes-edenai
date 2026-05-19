@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-edenai",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "n8n community node for Eden AI — access 300+ models from 50+ providers through a single European AI gateway",
   "keywords": [
     "n8n-community-node-package",
@@ -44,8 +44,10 @@
       "dist/nodes/LmChatEdenAi/LmChatEdenAi.node.js"
     ]
   },
+  "dependencies": {
+    "@n8n/ai-node-sdk": "^0.11.1"
+  },
   "devDependencies": {
-    "@n8n/ai-node-sdk": "^0.5.0",
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
@@ -54,7 +56,6 @@
     "typescript": "^5.0.0"
   },
   "peerDependencies": {
-    "@n8n/ai-node-sdk": "*",
     "n8n-workflow": "*"
   }
 }
