@@ -10,7 +10,7 @@ export class EdenAiApi implements ICredentialType {
 
 	displayName = 'Eden AI';
 
-	documentationUrl = 'https://docs.edenai.run/v3/llms/authentication';
+	documentationUrl = 'https://www.edenai.co/docs';
 
 	properties: INodeProperties[] = [
 		{
@@ -25,7 +25,7 @@ export class EdenAiApi implements ICredentialType {
 			displayName: 'Base URL',
 			name: 'url',
 			type: 'hidden',
-			default: 'https://api.edenai.run/v3/llm',
+			default: 'https://api.edenai.run/v3',	
 		},
 	];
 
