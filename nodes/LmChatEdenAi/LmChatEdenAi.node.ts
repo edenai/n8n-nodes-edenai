@@ -19,11 +19,6 @@ export class LmChatEdenAi implements INodeType {
 			name: 'Eden AI Chat Model',
 		},
 		codex: {
-			categories: ['AI'],
-			subcategories: {
-				AI: ['Language Models', 'Root Nodes'],
-				'Language Models': ['Chat Models (Recommended)'],
-			},
 			resources: {
 				primaryDocumentation: [
 					{
