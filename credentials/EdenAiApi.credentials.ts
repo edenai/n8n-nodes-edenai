@@ -8,7 +8,7 @@ import type {
 export class EdenAiApi implements ICredentialType {
 	name = 'edenAiApi';
 
-	displayName = 'Eden AI';
+	displayName = 'Eden AI API';
 
 	documentationUrl = 'https://www.edenai.co/docs';
 

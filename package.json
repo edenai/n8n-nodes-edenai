@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-edenai",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "n8n community node for Eden AI — access 300+ models from 50+ providers through a single European AI gateway",
   "keywords": [
     "n8n-community-node-package",
@@ -28,7 +28,7 @@
   "scripts": {
     "build": "tsc && node scripts/post-build.js",
     "dev": "tsc --watch",
-    "lint": "eslint nodes credentials --ext .ts",
+    "lint": "eslint nodes credentials package.json --ext .ts,.json",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build && npm run lint"
   },
@@ -51,6 +51,7 @@
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "eslint": "^8.0.0",
+    "eslint-plugin-n8n-nodes-base": "^1.16.6",
     "n8n-workflow": "^2.14.0",
     "typescript": "^5.0.0"
   },

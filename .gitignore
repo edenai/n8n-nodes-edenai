@@ -1,3 +1,11 @@
 node_modules
 dist
 *.js.map
+
+# n8n-as-code workspace artifacts (local VSCode tooling, not part of the package)
+.n8nac/
+.agents/
+.github/agents/
+AGENTS.md
+n8nac-config.json
+workflows/
