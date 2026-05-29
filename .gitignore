@@ -9,3 +9,4 @@ dist
 AGENTS.md
 n8nac-config.json
 workflows/
+.claude/
