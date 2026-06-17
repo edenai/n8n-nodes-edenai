@@ -33,7 +33,7 @@ export class LmChatEdenAi implements INodeType {
 			resources: {
 				primaryDocumentation: [
 					{
-						url: 'https://docs.edenai.run/v3/llms/chat-completions',
+						url: 'https://edenai.co/docs/v3/llms/chat-completions',
 					},
 				],
 			},
@@ -86,7 +86,7 @@ export class LmChatEdenAi implements INodeType {
 				// Custom description is more informative than the generic dynamic-options boilerplate.
 				// eslint-disable-next-line n8n-nodes-base/node-param-description-wrong-for-dynamic-options
 				description:
-					'The model to use in provider/model format (e.g. openai/gpt-4o, anthropic/claude-sonnet-4-5). Pick <strong>Smart Routing (@edenai)</strong> at the top of the list to let Eden AI auto-select. <a href="https://docs.edenai.run/v3/llms/listing-models">Browse all models</a>.',
+					'The model to use in provider/model format (e.g. openai/gpt-4o, anthropic/claude-sonnet-4-5). Pick <strong>Smart Routing (@edenai)</strong> at the top of the list to let Eden AI auto-select. <a href="https://edenai.co/docs/v3/llms/listing-models">Browse all models</a>.',
 				typeOptions: {
 					loadOptionsDependsOn: ['euOnly'],
 					loadOptionsMethod: 'getModels',
@@ -116,7 +116,7 @@ export class LmChatEdenAi implements INodeType {
 				// Custom description carries provider-compatibility warnings the generic boilerplate can't.
 				// eslint-disable-next-line n8n-nodes-base/node-param-description-wrong-for-dynamic-multi-options
 				description:
-					'Models the smart router may choose from. Bedrock and OVHcloud models are excluded automatically because the upstream router doesn\'t support them yet. Newer Mistral versions (mistral-large-2411 and above) may also fail with a 400. <a href="https://docs.edenai.run/v3/llms/smart-routing">Learn more</a>.',
+					'Models the smart router may choose from. Bedrock and OVHcloud models are excluded automatically because the upstream router doesn\'t support them yet. Newer Mistral versions (mistral-large-2411 and above) may also fail with a 400. <a href="https://edenai.co/docs/v3/llms/smart-routing">Learn more</a>.',
 				displayOptions: {
 					show: {
 						model: ['@edenai'],
@@ -217,7 +217,7 @@ export class LmChatEdenAi implements INodeType {
 						default:
 							'{\n  "name": "response",\n  "strict": true,\n  "schema": {\n    "type": "object",\n    "properties": {},\n    "required": [],\n    "additionalProperties": false\n  }\n}',
 						description:
-							'JSON Schema the response must conform to. Used only when Response Format is set to JSON Schema. Must include "name" and "schema"; "strict": true is recommended. <a href="https://docs.edenai.run/v3/llms/structured-output">See examples</a>.',
+							'JSON Schema the response must conform to. Used only when Response Format is set to JSON Schema. Must include "name" and "schema"; "strict": true is recommended. <a href="https://edenai.co/docs/v3/llms/structured-output">See examples</a>.',
 						displayOptions: {
 							show: {
 								responseFormat: ['json_schema'],

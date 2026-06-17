@@ -28,7 +28,7 @@ export class EmbeddingsEdenAi implements INodeType {
 			resources: {
 				primaryDocumentation: [
 					{
-						url: 'https://docs.edenai.run/v3/llms/embeddings',
+						url: 'https://edenai.co/docs/v3/llms/embeddings',
 					},
 				],
 			},
@@ -69,7 +69,7 @@ export class EmbeddingsEdenAi implements INodeType {
 				// Custom description is more informative than the generic dynamic-options boilerplate.
 				// eslint-disable-next-line n8n-nodes-base/node-param-description-wrong-for-dynamic-options
 				description:
-					'The embeddings model to use in provider/model format (e.g. openai/text-embedding-3-small). <a href="https://docs.edenai.run/v3/llms/embeddings">Browse all models</a>.',
+					'The embeddings model to use in provider/model format (e.g. openai/text-embedding-3-small). <a href="https://edenai.co/docs/v3/llms/embeddings">Browse all models</a>.',
 				typeOptions: {
 					loadOptionsDependsOn: ['euOnly'],
 					loadOptionsMethod: 'getEmbeddingModels',

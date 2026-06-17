@@ -10,7 +10,7 @@ export class EdenAiApi implements ICredentialType {
 
 	displayName = 'Eden AI API';
 
-	documentationUrl = 'https://www.edenai.co/docs';
+	documentationUrl = 'https://edenai.co/docs';
 
 	properties: INodeProperties[] = [
 		{

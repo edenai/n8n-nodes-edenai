@@ -2,7 +2,7 @@ const { copyFileSync, mkdirSync } = require('fs');
 const { join } = require('path');
 
 // Copy SVG icons to dist for each node
-const nodeDirs = ['LmChatEdenAi', 'EmbeddingsEdenAi'];
+const nodeDirs = ['LmChatEdenAi', 'EmbeddingsEdenAi', 'ExpertModelsEdenAi'];
 
 for (const dir of nodeDirs) {
 	const iconSrc = join(__dirname, '..', 'nodes', dir);

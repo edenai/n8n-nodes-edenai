@@ -1,6 +1,6 @@
 # n8n-nodes-edenai
 
-This is an n8n community node for [Eden AI](https://www.edenai.run) — a European AI gateway that gives you access to 300+ models from 50+ providers through a single API and credential.
+This is an n8n community node for [Eden AI](https://www.edenai.co) — a European AI gateway that gives you access to 300+ models from 50+ providers through a single API and credential.
 
 ## Features
 
@@ -23,9 +23,17 @@ You need an Eden AI API key. Get one at [app.edenai.run](https://app.edenai.run)
 
 ## Usage
 
+This package provides three nodes:
+
+- **Eden AI Chat Model** — language-model sub-node for AI Agents and Chains
+- **Eden AI Embeddings** — embeddings sub-node for vector stores and retrievers
+- **Eden AI Expert Models** — action node for non-LLM features (OCR, text, image, audio, translation)
+
+### Eden AI Chat Model
+
 Add the **Eden AI Chat Model** node as a sub-node to any AI Agent or Chain in your workflow.
 
-### Options
+#### Options
 
 | Option | Description |
 |--------|-------------|
@@ -37,8 +45,16 @@ Add the **Eden AI Chat Model** node as a sub-node to any AI Agent or Chain in yo
 | **Max Tokens** | Maximum tokens to generate |
 | **Response Format** | `text` or `json_object` |
 
+### Eden AI Expert Models
+
+The **Eden AI Expert Models** node runs Eden AI's non-LLM features through the Universal AI endpoint. Unlike the Chat Model and Embeddings sub-nodes, it's a regular action node — connect it inline in a workflow.
+
+Pick a **Feature**, **Subfeature**, and **Provider** (loaded live from your account), set the **Input Type** to Text or File (a public URL, an uploaded file ID, or binary data from a previous node), and add any extra parameters (e.g. `target_language`, `voice`, `document_type`) under **Additional Input Fields**. Fallback providers and downloading generated files (images, speech, translated documents) as binary data are supported via **Options**.
+
+> Only synchronous features are available today. Asynchronous features — speech-to-text, multi-page OCR, and video generation — aren't supported yet.
+
 ## Links
 
-- [Eden AI Documentation](https://docs.edenai.co)
+- [Eden AI Documentation](https://edenai.co/docs)
 - [Browse all models](https://app.edenai.run/models)
 - [n8n Community Nodes](https://docs.n8n.io/integrations/community-nodes/)
