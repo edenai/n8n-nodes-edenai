@@ -29,6 +29,7 @@
     "build": "tsc && node scripts/post-build.js",
     "dev": "tsc --watch",
     "lint": "eslint nodes credentials package.json --ext .ts,.json",
+    "test": "npm run build && node test/test-nodes.cjs",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build && npm run lint"
   },

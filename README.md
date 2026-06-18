@@ -49,9 +49,28 @@ Add the **Eden AI Chat Model** node as a sub-node to any AI Agent or Chain in yo
 
 The **Eden AI Expert Models** node runs Eden AI's non-LLM features through the Universal AI endpoint. Unlike the Chat Model and Embeddings sub-nodes, it's a regular action node — connect it inline in a workflow.
 
-Pick a **Feature**, **Subfeature**, and **Provider** (loaded live from your account), set the **Input Type** to Text or File (a public URL, an uploaded file ID, or binary data from a previous node), and add any extra parameters (e.g. `target_language`, `voice`, `document_type`) under **Additional Input Fields**. Fallback providers and downloading generated files (images, speech, translated documents) as binary data are supported via **Options**.
+Pick a **Feature**, **Subfeature**, and **Provider** (loaded live from your account), set the **Input Type** to Text or File (a public URL, an uploaded file ID, or binary data from a previous node), and add any extra parameters (e.g. `target_language`, `voice`, `document_type`) under **Additional Input Fields**. Toggle **EU Only** to route through `api.eu.edenai.run` and list only EU-eligible providers (GDPR / data residency).
 
-> Only synchronous features are available today. Asynchronous features — speech-to-text, multi-page OCR, and video generation — aren't supported yet.
+Other **Options**:
+
+| Option | Default | Purpose |
+| --- | --- | --- |
+| **Fallback Models** | — | Comma-separated providers (up to 3) tried in order if the primary fails. |
+| **Provider Params** | `{}` | Provider-specific parameters sent as `provider_params`; takes precedence over the normalized input fields. |
+| **Simplify Response** | `false` | Return only the feature `output` instead of the full envelope (status, cost, provider, output). |
+| **Show Original Response** | `false` | Include the raw provider response under `original_response`. |
+| **Download File Output** | `false` | Download generated files (image generation, text-to-speech, document translation) and attach as binary data under **Output Binary Field** (default `data`). |
+
+**Asynchronous features** — speech-to-text, multi-page OCR (`ocr_async`, `ocr_tables_async`), and video generation — are supported and labelled **(async)** in the Subfeature list. By default the node launches the job and polls until it finishes. Control this under **Options**:
+
+| Option | Default | Purpose |
+| --- | --- | --- |
+| **Wait for Completion** | `true` | Poll until the job finishes and return its result. Turn off to return the job handle (`public_id`) immediately and poll it yourself or receive a webhook. |
+| **Poll Interval (Ms)** | `4000` | Delay between job status checks while waiting. |
+| **Max Wait Time (Ms)** | `300000` | How long to poll before timing out. |
+| **Webhook URL** | — | A URL Eden AI calls when the job completes (sent as `webhook_receiver`). |
+
+This node is also exposed as an **AI tool** (`usableAsTool`), so an AI Agent can call Eden AI expert models directly.
 
 ## Links
 

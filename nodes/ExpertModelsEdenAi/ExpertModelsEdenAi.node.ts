@@ -561,6 +561,9 @@ export class ExpertModelsEdenAi implements INodeType {
 				const isAsync = (model.split('/')[1] ?? '').endsWith('_async');
 
 				let response: UniversalAiResponse;
+				// True when an async job is launched but NOT awaited (waitForCompletion=false):
+				// the launch handle (with public_id) must be returned as-is, never simplified away.
+				let returnedImmediately = false;
 
 				if (isAsync) {
 					// TODO: confirm the exact webhook field name ("webhook_receiver") with Eden AI
@@ -586,6 +589,7 @@ export class ExpertModelsEdenAi implements INodeType {
 					if (options.waitForCompletion === false) {
 						// Return the job handle immediately; caller polls it or uses the webhook.
 						response = launch;
+						returnedImmediately = true;
 					} else {
 						const pollInterval = options.pollInterval ?? 4000;
 						const maxWaitTime = options.maxWaitTime ?? 300000;
@@ -625,13 +629,14 @@ export class ExpertModelsEdenAi implements INodeType {
 					});
 				}
 
-				const json: IDataObject = options.simplifyResponse
-					? ((response.output as IDataObject) ?? {})
-					: (response as unknown as IDataObject);
+				const json: IDataObject =
+					options.simplifyResponse && !returnedImmediately
+						? ((response.output as IDataObject) ?? {})
+						: (response as unknown as IDataObject);
 
 				const newItem: INodeExecutionData = { json, pairedItem: { item: i } };
 
-				if (options.downloadFileOutput) {
+				if (options.downloadFileOutput && !returnedImmediately) {
 					const output = response.output ?? {};
 					const resourceUrl =
 						output.image_resource_url ??
