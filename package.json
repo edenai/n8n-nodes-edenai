@@ -63,5 +63,10 @@
     "@langchain/openai": "*",
     "@n8n/ai-node-sdk": "*",
     "n8n-workflow": "*"
+  },
+  "overrides": {
+    "form-data": "^4.0.6",
+    "minimatch": "^9.0.7",
+    "uuid": "^11.1.1"
   }
 }
