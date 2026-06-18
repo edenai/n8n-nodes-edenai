@@ -62,6 +62,7 @@ export class ExpertModelsEdenAi implements INodeType {
 		},
 		inputs: ['main'],
 		outputs: ['main'],
+		usableAsTool: true,
 		credentials: [
 			{
 				name: 'edenAiApi',
@@ -98,7 +99,7 @@ export class ExpertModelsEdenAi implements INodeType {
 				// Custom description carries the sync-only caveat the generic boilerplate can't.
 				// eslint-disable-next-line n8n-nodes-base/node-param-description-wrong-for-dynamic-options
 				description:
-					'The specific capability within the feature. Only synchronous subfeatures are listed; asynchronous ones (e.g. speech-to-text, multi-page OCR, video generation) are not supported by this node yet.',
+					'The specific capability within the feature. Asynchronous subfeatures (speech-to-text, multi-page OCR, video generation) are marked "(async)" and are polled to completion by default.',
 				typeOptions: {
 					loadOptionsDependsOn: ['euOnly', 'feature'],
 					loadOptionsMethod: 'getSubfeatures',
@@ -286,12 +287,27 @@ export class ExpertModelsEdenAi implements INodeType {
 							'Comma-separated list of fallback providers (up to 3). Each is "provider[/model]" or a full "feature/subfeature/provider[/model]" path matching the primary. If the primary fails, Eden AI retries with each in order.',
 					},
 					{
+						displayName: 'Max Wait Time (Ms)',
+						name: 'maxWaitTime',
+						type: 'number',
+						default: 300000,
+						description:
+							'Async subfeatures only: how long to poll for the job result before timing out',
+					},
+					{
 						displayName: 'Output Binary Field',
 						name: 'outputBinaryProperty',
 						type: 'string',
 						default: 'data',
 						description:
 							'Name of the binary property to store the downloaded file under. Only used when Download File Output is enabled.',
+					},
+					{
+						displayName: 'Poll Interval (Ms)',
+						name: 'pollInterval',
+						type: 'number',
+						default: 4000,
+						description: 'Async subfeatures only: delay between job status checks',
 					},
 					{
 						displayName: 'Provider Params',
@@ -316,6 +332,23 @@ export class ExpertModelsEdenAi implements INodeType {
 						default: false,
 						description:
 							'Whether to return only the feature output instead of the full envelope (status, cost, provider, output)',
+					},
+					{
+						displayName: 'Wait for Completion',
+						name: 'waitForCompletion',
+						type: 'boolean',
+						default: true,
+						description:
+							'Whether to poll until an asynchronous job finishes and return its result (async subfeatures only). When off, the job handle (with public_id) is returned immediately so you can poll it yourself or receive a webhook.',
+					},
+					{
+						displayName: 'Webhook URL',
+						name: 'webhookUrl',
+						type: 'string',
+						default: '',
+						placeholder: 'https://your-app.com/webhook',
+						description:
+							'Async subfeatures only: a URL Eden AI calls when the job completes. Sent as webhook_receiver.',
 					},
 				],
 			},
@@ -361,8 +394,11 @@ export class ExpertModelsEdenAi implements INodeType {
 				)) as FeatureInfo;
 
 				return (response.subfeatures ?? [])
-					.filter((sf) => (sf.mode ?? 'sync') === 'sync')
-					.map((sf) => ({ name: sf.fullname ?? sf.name, value: sf.name }))
+					.map((sf) => {
+						const label = sf.fullname ?? sf.name;
+						const isAsync = (sf.mode ?? 'sync') === 'async';
+						return { name: isAsync ? `${label} (async)` : label, value: sf.name };
+					})
 					.sort((a, b) => a.name.localeCompare(b.name));
 			},
 
@@ -485,6 +521,10 @@ export class ExpertModelsEdenAi implements INodeType {
 					simplifyResponse?: boolean;
 					downloadFileOutput?: boolean;
 					outputBinaryProperty?: string;
+					waitForCompletion?: boolean;
+					pollInterval?: number;
+					maxWaitTime?: number;
+					webhookUrl?: string;
 				};
 
 				const body: IDataObject = { model, input: input as IDataObject };
@@ -516,19 +556,68 @@ export class ExpertModelsEdenAi implements INodeType {
 					body.show_original_response = true;
 				}
 
-				const response = (await this.helpers.httpRequestWithAuthentication.call(
-					this,
-					'edenAiApi',
-					{
-						method: 'POST',
-						url: `${baseUrl}/universal-ai`,
-						body,
-						json: true,
-					},
-				)) as UniversalAiResponse;
+				// Async subfeatures (the path's 2nd segment ends with "_async") use the
+				// /universal-ai/async endpoint: the launch returns a public_id, then we poll.
+				const isAsync = (model.split('/')[1] ?? '').endsWith('_async');
+
+				let response: UniversalAiResponse;
+
+				if (isAsync) {
+					// TODO: confirm the exact webhook field name ("webhook_receiver") with Eden AI
+					// before release — set defensively for now.
+					if (options.webhookUrl) {
+						body.webhook_receiver = options.webhookUrl;
+					}
+
+					const launch = (await this.helpers.httpRequestWithAuthentication.call(
+						this,
+						'edenAiApi',
+						{ method: 'POST', url: `${baseUrl}/universal-ai/async`, body, json: true },
+					)) as UniversalAiResponse & { public_id?: string };
+
+					const jobId = launch.public_id;
+					if (!jobId) {
+						throw new NodeApiError(this.getNode(), launch as unknown as JsonObject, {
+							message: 'Async job launch did not return a public_id.',
+							itemIndex: i,
+						});
+					}
+
+					if (options.waitForCompletion === false) {
+						// Return the job handle immediately; caller polls it or uses the webhook.
+						response = launch;
+					} else {
+						const pollInterval = options.pollInterval ?? 4000;
+						const maxWaitTime = options.maxWaitTime ?? 300000;
+						const deadline = Date.now() + maxWaitTime;
+						let polled = launch as UniversalAiResponse;
+						while ((polled.status ?? 'processing') === 'processing') {
+							if (Date.now() > deadline) {
+								throw new NodeOperationError(
+									this.getNode(),
+									`Async job ${jobId} did not finish within ${maxWaitTime} ms.`,
+									{ itemIndex: i },
+								);
+							}
+							await new Promise((resolve) => setTimeout(resolve, pollInterval));
+							polled = (await this.helpers.httpRequestWithAuthentication.call(
+								this,
+								'edenAiApi',
+								{ method: 'GET', url: `${baseUrl}/universal-ai/async/${jobId}`, json: true },
+							)) as UniversalAiResponse;
+						}
+						response = polled;
+					}
+				} else {
+					response = (await this.helpers.httpRequestWithAuthentication.call(
+						this,
+						'edenAiApi',
+						{ method: 'POST', url: `${baseUrl}/universal-ai`, body, json: true },
+					)) as UniversalAiResponse;
+				}
 
 				// Universal AI returns HTTP 200 with status:"fail" for feature-level failures.
-				if (response.status === 'fail') {
+				if (response.status === 'fail' || (response.error && response.status !== 'processing')) {
 					const message = response.error?.message ?? 'Eden AI returned status "fail".';
 					throw new NodeApiError(this.getNode(), response as unknown as JsonObject, {
 						message,
