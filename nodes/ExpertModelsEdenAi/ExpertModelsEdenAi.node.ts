@@ -566,8 +566,8 @@ export class ExpertModelsEdenAi implements INodeType {
 				let returnedImmediately = false;
 
 				if (isAsync) {
-					// TODO: confirm the exact webhook field name ("webhook_receiver") with Eden AI
-					// before release — set defensively for now.
+					// Confirmed against the live async API: the webhook field is "webhook_receiver"
+					// (Eden AI POSTs the completed job to this URL).
 					if (options.webhookUrl) {
 						body.webhook_receiver = options.webhookUrl;
 					}
