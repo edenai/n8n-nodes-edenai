@@ -9,6 +9,22 @@ This is an n8n community node for [Eden AI](https://www.edenai.co) — a Europea
 - **Web search** — enable real-time web access for supported models
 - **European hosting** — full transparency on where models are hosted, GDPR-compliant
 
+## Requirements
+
+**n8n 2.16 or newer.**
+
+The Eden AI Chat Model and Eden AI Embeddings nodes are AI sub-nodes built on
+`@n8n/ai-node-sdk`, which only exists in n8n 2.x. On an older n8n the package cannot
+load at all.
+
+If your n8n is too old, the install fails with a misleading message:
+
+> Error loading package "n8n-nodes-edenai": The specified package could not be loaded.
+> Cause: Class could not be found. Please check if the class is named correctly.
+
+The class names are fine — n8n reports *any* `TypeError` raised while loading a node
+that way. Check your n8n version before anything else.
+
 ## Installation
 
 In your n8n instance, go to **Settings → Community Nodes** and install:
