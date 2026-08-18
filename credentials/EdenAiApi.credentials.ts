@@ -14,12 +14,21 @@ export class EdenAiApi implements ICredentialType {
 
 	properties: INodeProperties[] = [
 		{
+			displayName:
+				'Get your API key from the <a href="https://app.edenai.run/settings/api-keys" target="_blank">Eden AI API keys panel</a>.',
+			name: 'apiKeyNotice',
+			type: 'notice',
+			default: '',
+		},
+		{
 			displayName: 'API Key',
 			name: 'apiKey',
 			type: 'string',
 			typeOptions: { password: true },
 			required: true,
 			default: '',
+			description:
+				'Your Eden AI API key. Create or copy one from the <a href="https://app.edenai.run/settings/api-keys" target="_blank">API keys panel</a> of your Eden AI account.',
 		},
 		{
 			displayName: 'Base URL',
