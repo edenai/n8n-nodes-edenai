@@ -1,6 +1,4 @@
-import { supplyModel } from '@n8n/ai-node-sdk';
 import {
-	NodeOperationError,
 	type ILoadOptionsFunctions,
 	type INodePropertyOptions,
 	type INodeType,
@@ -387,6 +385,13 @@ export class LmChatEdenAi implements INodeType {
 	};
 
 	async supplyData(this: ISupplyDataFunctions, itemIndex: number): Promise<SupplyData> {
+		// Loaded lazily so a missing/unresolvable dependency cannot break node *loading*.
+		// n8n strips peerDependencies on install, and the official Docker image keeps its
+		// own modules out of reach of ~/.n8n/nodes, so a module-scope import here would
+		// surface as the misleading "Class could not be found" error.
+		const { supplyModel } = await import('@n8n/ai-node-sdk');
+		const { NodeOperationError } = await import('n8n-workflow');
+
 		const credentials = await this.getCredentials('edenAiApi');
 
 		const euOnly = this.getNodeParameter('euOnly', itemIndex, false) as boolean;

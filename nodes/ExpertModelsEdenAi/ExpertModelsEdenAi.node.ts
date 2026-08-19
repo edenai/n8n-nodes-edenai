@@ -1,6 +1,4 @@
 import {
-	NodeApiError,
-	NodeOperationError,
 	type IDataObject,
 	type IExecuteFunctions,
 	type ILoadOptionsFunctions,
@@ -428,6 +426,10 @@ export class ExpertModelsEdenAi implements INodeType {
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
+		// Lazy: keeps node loading independent of n8n-workflow being resolvable at
+		// module scope (see LmChatEdenAi for the full rationale).
+		const { NodeApiError, NodeOperationError } = await import('n8n-workflow');
+
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
 		const credentials = await this.getCredentials('edenAiApi');
