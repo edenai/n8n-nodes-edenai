@@ -1,6 +1,5 @@
 import { OpenAIEmbeddings } from '@langchain/openai';
 import {
-	NodeConnectionTypes,
 	type ILoadOptionsFunctions,
 	type INodePropertyOptions,
 	type INodeType,
@@ -39,7 +38,7 @@ export class EmbeddingsEdenAi implements INodeType {
 		// eslint-disable-next-line n8n-nodes-base/node-class-description-inputs-wrong-regular-node
 		inputs: [],
 		// eslint-disable-next-line n8n-nodes-base/node-class-description-outputs-wrong
-		outputs: [NodeConnectionTypes.AiEmbedding],
+		outputs: ['ai_embedding'],
 		outputNames: ['Embeddings'],
 		credentials: [
 			{

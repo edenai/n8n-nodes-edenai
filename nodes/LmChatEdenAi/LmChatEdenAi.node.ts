@@ -1,6 +1,5 @@
 import { supplyModel } from '@n8n/ai-node-sdk';
 import {
-	NodeConnectionTypes,
 	NodeOperationError,
 	type ILoadOptionsFunctions,
 	type INodePropertyOptions,
@@ -44,7 +43,7 @@ export class LmChatEdenAi implements INodeType {
 		// eslint-disable-next-line n8n-nodes-base/node-class-description-inputs-wrong-regular-node
 		inputs: [],
 		// eslint-disable-next-line n8n-nodes-base/node-class-description-outputs-wrong
-		outputs: [NodeConnectionTypes.AiLanguageModel],
+		outputs: ['ai_languageModel'],
 		outputNames: ['Model'],
 		credentials: [
 			{
