@@ -6,6 +6,7 @@ import {
 	type ISupplyDataFunctions,
 	type SupplyData,
 } from 'n8n-workflow';
+import { loadEndpointIds } from '../shared/modelList';
 
 const GLOBAL_BASE_URL = 'https://api.edenai.run/v3';
 const EU_BASE_URL = 'https://api.eu.edenai.run/v3';
@@ -332,19 +333,8 @@ export class LmChatEdenAi implements INodeType {
 				const euOnly = (this.getCurrentNodeParameter('euOnly') as boolean) ?? false;
 				const baseUrl = euOnly ? EU_BASE_URL : GLOBAL_BASE_URL;
 
-				const response = (await this.helpers.httpRequestWithAuthentication.call(
-					this,
-					'edenAiApi',
-					{
-						method: 'GET',
-						url: `${baseUrl}/models`,
-						json: true,
-					},
-				)) as { data?: Array<{ id: string }> };
-
-				const models: INodePropertyOptions[] = (response.data ?? [])
-					.map((m) => ({ name: m.id, value: m.id }))
-					.sort((a, b) => a.name.localeCompare(b.name));
+				const ids = await loadEndpointIds.call(this, `${baseUrl}/models`);
+				const models: INodePropertyOptions[] = ids.map((id) => ({ name: id, value: id }));
 
 				return [
 					{
@@ -363,23 +353,10 @@ export class LmChatEdenAi implements INodeType {
 				const euOnly = (this.getCurrentNodeParameter('euOnly') as boolean) ?? false;
 				const baseUrl = euOnly ? EU_BASE_URL : GLOBAL_BASE_URL;
 
-				const response = (await this.helpers.httpRequestWithAuthentication.call(
-					this,
-					'edenAiApi',
-					{
-						method: 'GET',
-						url: `${baseUrl}/models`,
-						json: true,
-					},
-				)) as { data?: Array<{ id: string }> };
-
-				return (response.data ?? [])
-					.filter(
-						(m) =>
-							!SMART_ROUTING_INCOMPATIBLE_PREFIXES.some((p) => m.id.startsWith(p)),
-					)
-					.map((m) => ({ name: m.id, value: m.id }))
-					.sort((a, b) => a.name.localeCompare(b.name));
+				const ids = await loadEndpointIds.call(this, `${baseUrl}/models`);
+				return ids
+					.filter((id) => !SMART_ROUTING_INCOMPATIBLE_PREFIXES.some((p) => id.startsWith(p)))
+					.map((id) => ({ name: id, value: id }));
 			},
 		},
 	};
