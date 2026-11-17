@@ -1,7 +1,8 @@
 /* eslint-disable */
 'use strict';
 
-// Mocked unit tests for the ExpertModelsEdenAi node (sync + async paths).
+// Mocked unit tests for the ExpertModelsEdenAi node (sync + async paths) and
+// the model dropdown loaders of LmChatEdenAi and EmbeddingsEdenAi.
 // No test framework: plain Node + assert. Run with `npm test` (builds first)
 // or `node test/test-nodes.cjs` against an existing dist build.
 //
@@ -15,6 +16,13 @@ const path = require('node:path');
 const { ExpertModelsEdenAi } = require(
 	path.join(__dirname, '..', 'dist', 'nodes', 'ExpertModelsEdenAi', 'ExpertModelsEdenAi.node.js'),
 );
+const { LmChatEdenAi } = require(
+	path.join(__dirname, '..', 'dist', 'nodes', 'LmChatEdenAi', 'LmChatEdenAi.node.js'),
+);
+const { EmbeddingsEdenAi } = require(
+	path.join(__dirname, '..', 'dist', 'nodes', 'EmbeddingsEdenAi', 'EmbeddingsEdenAi.node.js'),
+);
+const { endpointIds } = require(path.join(__dirname, '..', 'dist', 'nodes', 'shared', 'modelList.js'));
 
 const GLOBAL_BASE = 'https://api.edenai.run/v3';
 const EU_BASE = 'https://api.eu.edenai.run/v3';
@@ -281,6 +289,96 @@ async function test(name, fn) {
 		const out = await run(ctx);
 		assert.deepStrictEqual(out[0][0].binary.image, prepared, 'downloaded file attached under outputBinaryProperty');
 		assert.ok(out[0][0].binary.existing, 'pre-existing binary is preserved');
+	});
+
+	console.log('\nModel lists (?view=models)');
+
+	// Shape of GET {base}/models?view=models: bare-name groups with their endpoints.
+	const grouped = {
+		data: [
+			{ id: 'gpt-4o', endpoint_count: 2, endpoints: [{ id: 'openai/gpt-4o' }, { id: 'azure/gpt-4o' }] },
+			{ id: '~claude-sonnet-latest', endpoint_count: 1, endpoints: [{ id: 'anthropic/claude-sonnet-latest' }] },
+			{ id: 'policy/cheapest', endpoint_count: 0, endpoints: [] },
+			{ id: 'claude-sonnet-4-5', endpoint_count: 2, endpoints: [{ id: 'anthropic/claude-sonnet-4-5' }, { id: 'amazon/claude-sonnet-4-5' }] },
+			{ id: 'gpt-4o-2024-08-06', endpoint_count: 1, endpoints: [{ id: 'openai/gpt-4o' }] },
+			{ id: 'mistral-large', endpoint_count: 2, endpoints: [{ id: 'ovhcloud/mistral-large' }, { id: 'mistral/mistral-large' }] },
+			{ id: 'acme/my-finetune', endpoint_count: 1, endpoints: [{ id: 'acme/my-finetune' }] },
+		],
+	};
+	const allIds = [
+		'acme/my-finetune',
+		'amazon/claude-sonnet-4-5',
+		'anthropic/claude-sonnet-4-5',
+		'azure/gpt-4o',
+		'mistral/mistral-large',
+		'openai/gpt-4o',
+		'ovhcloud/mistral-large',
+	];
+
+	function makeLoadCtx(params, response) {
+		const calls = [];
+		return {
+			calls,
+			ctx: {
+				getCurrentNodeParameter: (name) => params[name],
+				helpers: {
+					httpRequestWithAuthentication: function (cred, o) {
+						calls.push({ cred, method: o.method, url: o.url, qs: o.qs });
+						return Promise.resolve(response);
+					},
+				},
+			},
+		};
+	}
+
+	const chat = new LmChatEdenAi();
+	const embeddings = new EmbeddingsEdenAi();
+
+	await test('endpointIds: skips ~ and policy/, dedupes, keeps hosted model, sorts', async () => {
+		assert.deepStrictEqual(endpointIds(grouped.data), allIds);
+	});
+
+	await test('endpointIds: tolerates a group without endpoints', async () => {
+		assert.deepStrictEqual(endpointIds([{ id: 'gpt-4o' }]), []);
+	});
+
+	await test('getModels: asks for view=models, Smart Routing first, then endpoint ids', async () => {
+		const { ctx, calls } = makeLoadCtx({ euOnly: false }, grouped);
+		const out = await chat.methods.loadOptions.getModels.call(ctx);
+		assert.deepStrictEqual(calls, [{ cred: 'edenAiApi', method: 'GET', url: `${GLOBAL_BASE}/models`, qs: { view: 'models' } }]);
+		assert.strictEqual(out[0].value, '@edenai');
+		assert.deepStrictEqual(out.slice(1).map((o) => o.value), allIds);
+		assert.deepStrictEqual(out.slice(1).map((o) => o.name), allIds);
+	});
+
+	await test('getRouterCandidates: drops amazon/ and ovhcloud/ endpoints, EU host when euOnly', async () => {
+		const { ctx, calls } = makeLoadCtx({ euOnly: true }, grouped);
+		const out = await chat.methods.loadOptions.getRouterCandidates.call(ctx);
+		assert.deepStrictEqual(calls, [{ cred: 'edenAiApi', method: 'GET', url: `${EU_BASE}/models`, qs: { view: 'models' } }]);
+		assert.deepStrictEqual(out.map((o) => o.value), [
+			'acme/my-finetune',
+			'anthropic/claude-sonnet-4-5',
+			'azure/gpt-4o',
+			'mistral/mistral-large',
+			'openai/gpt-4o',
+		]);
+	});
+
+	await test('getEmbeddingModels: asks for view=models on /embeddings/models', async () => {
+		const { ctx, calls } = makeLoadCtx({ euOnly: false }, {
+			data: [
+				{ id: 'text-embedding-3-small', endpoint_count: 2, endpoints: [{ id: 'openai/text-embedding-3-small' }, { id: 'azure/text-embedding-3-small' }] },
+				{ id: '~embed-latest', endpoint_count: 1, endpoints: [{ id: 'mistral/embed-latest' }] },
+			],
+		});
+		const out = await embeddings.methods.loadOptions.getEmbeddingModels.call(ctx);
+		assert.deepStrictEqual(calls, [{ cred: 'edenAiApi', method: 'GET', url: `${GLOBAL_BASE}/embeddings/models`, qs: { view: 'models' } }]);
+		assert.deepStrictEqual(out.map((o) => o.value), ['azure/text-embedding-3-small', 'openai/text-embedding-3-small']);
+	});
+
+	await test('loaders: empty response gives an empty list', async () => {
+		const { ctx } = makeLoadCtx({ euOnly: false }, {});
+		assert.deepStrictEqual(await embeddings.methods.loadOptions.getEmbeddingModels.call(ctx), []);
 	});
 
 	console.log(`\n${passed} passed, ${failures.length} failed`);

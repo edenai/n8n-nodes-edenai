@@ -7,6 +7,7 @@ import {
 	type ISupplyDataFunctions,
 	type SupplyData,
 } from 'n8n-workflow';
+import { loadEndpointIds } from '../shared/modelList';
 
 const GLOBAL_BASE_URL = 'https://api.edenai.run/v3';
 const EU_BASE_URL = 'https://api.eu.edenai.run/v3';
@@ -116,19 +117,8 @@ export class EmbeddingsEdenAi implements INodeType {
 				const euOnly = (this.getCurrentNodeParameter('euOnly') as boolean) ?? false;
 				const baseUrl = euOnly ? EU_BASE_URL : GLOBAL_BASE_URL;
 
-				const response = (await this.helpers.httpRequestWithAuthentication.call(
-					this,
-					'edenAiApi',
-					{
-						method: 'GET',
-						url: `${baseUrl}/embeddings/models`,
-						json: true,
-					},
-				)) as { data?: Array<{ id: string }> };
-
-				return (response.data ?? [])
-					.map((m) => ({ name: m.id, value: m.id }))
-					.sort((a, b) => a.name.localeCompare(b.name));
+				const ids = await loadEndpointIds.call(this, `${baseUrl}/embeddings/models`);
+				return ids.map((id) => ({ name: id, value: id }));
 			},
 		},
 	};
